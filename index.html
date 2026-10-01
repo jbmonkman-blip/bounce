@@ -78,7 +78,7 @@
            font-size:16px;color:var(--pencil);padding:6px 4px}
   body.big #zoomBtn{display:block}
   body.big .status,body.big #strip,body.big .metarow,body.big .fader,
-  body.big .details,body.big .list,body.big .hint,body.big #lib,body.big #swap{display:none}
+  body.big .details,body.big .list,body.big .hint,body.big #lib,body.big #swap,body.big #home{display:none}
   body.big #wave{height:calc(100vh - 280px);min-height:300px}
   .times{display:flex;justify-content:space-between;align-items:center;font-size:14px;
          color:var(--pencil);margin-top:14px}
@@ -361,6 +361,7 @@
     <div class="title" id="title">&mdash;</div>
     <button class="swap" id="lib">library</button>
     <button class="swap" id="swap">change</button>
+    <button class="swap" id="home">home</button>
   </div>
   <p class="status" id="status"></p>
 
@@ -619,11 +620,25 @@ function doSave(){
   });
 }
 
+function backToTrack(){
+  $('intro').classList.add('hidden');
+  $('app').classList.remove('hidden');
+  setTimeout(function(){ makeLayers(); drawWave(); }, 30);
+}
 function renderLibrary(){
   return store.get('cb:index').then(function(idx){
     var btn = $('recentBtn');
     if (!btn) return;
-    btn.classList.toggle('hidden', !(idx && idx.length));
+    if (curKey){
+      // a track is still open behind the intro — don't make them reload it to change the skin
+      btn.textContent = 'back';
+      btn.classList.remove('hidden');
+      btn.onclick = backToTrack;
+    } else {
+      btn.textContent = 'recent';
+      btn.classList.toggle('hidden', !(idx && idx.length));
+      btn.onclick = function(){ $('lib').onclick(); };
+    }
   });
 }
 
@@ -639,7 +654,8 @@ function openSaved(h){
     $('title').textContent = rec.name;
     $('play').disabled = true;
     $('dur').textContent = fmt(dur);
-    say('notes only \u00b7 open the file to listen' + (bpmBase ? ' \u00b7 ' + bpmBase.toFixed(1) + ' bpm' : ''));
+    showBPM();
+    say('notes only \u00b7 tap change and pick ' + rec.name + (bpmBase ? ' \u00b7 ' + bpmBase.toFixed(1) + ' bpm' : ''));
     render(); drawWave();
   });
 }
@@ -671,6 +687,11 @@ $('title').onclick = function(){
   setTimeout(function(){ makeLayers(); drawWave(); }, 30);
 };
 $('recentBtn').onclick = function(){ $('lib').onclick(); };
+$('home').onclick = function(){
+  $('app').classList.add('hidden');
+  $('intro').classList.remove('hidden');
+  renderLibrary();
+};
 $('libClose').onclick = function(){ $('libSheet').classList.add('hidden'); };
 $('lib').onclick = function(){
   store.get('cb:index').then(function(idx){
@@ -689,7 +710,7 @@ $('lib').onclick = function(){
       var ct = document.createElement('em');
       ct.textContent = e.n ? e.n + (e.n === 1 ? ' note' : ' notes') : 'no notes';
       b.appendChild(nm); b.appendChild(ct);
-      b.onclick = function(){ $('libSheet').classList.add('hidden'); $('file').click(); };
+      b.onclick = function(){ $('libSheet').classList.add('hidden'); openSaved(e.h); };
       box.appendChild(b);
     });
     $('libSheet').classList.remove('hidden');
@@ -710,6 +731,8 @@ $('file').onchange = function(e){
   say('decoding ' + Math.round(f.size/1048576 * 10)/10 + ' MB\u2026');
 
   makeCtx();
+  // a fresh bounce starts flat — otherwise the last track's eq rides along and gets saved onto this one
+  setBand('low', 0); setBand('mid', 0); setBand('high', 0);
   f.arrayBuffer().then(function(ab){
     return new Promise(function(res, rej){ ctx.decodeAudioData(ab, res, rej); });
   }).then(function(buf){
@@ -1647,7 +1670,7 @@ function addCue(time, text, glyphs){
 function render(){
   var open = cues.filter(function(c){ return !c.resolved; }).length;
   $('ncount').textContent = cues.length
-    ? open + ' OPEN \u00b7 ' + cues.length + ' NOTES'
+    ? open + ' OPEN \u00b7 ' + cues.length + (cues.length === 1 ? ' NOTE' : ' NOTES')
     : 'NOTHING NOTED YET';
   $('nlist').innerHTML = '';
   cues.forEach(function(n){
