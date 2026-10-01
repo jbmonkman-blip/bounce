@@ -45,6 +45,9 @@
   .aperture{position:relative;width:100%;background:none;display:flex;flex-direction:column;
             align-items:center;gap:0;padding:0;animation:breathe 8s ease-in-out infinite}
   .bowl{width:min(52vw,196px);height:auto;display:block;color:var(--cyan)}
+  /* the disc is drawn at 82%, which lets the ground through. on paper that lifts
+     the colour, on black it drags it down — so go opaque in night. */
+  body.night .bowl circle{fill-opacity:1}
   .plate{display:block;background:var(--cyan);color:#F4F2EC;font-size:13px;font-weight:700;
          letter-spacing:.24em;padding:8px 20px}
   @keyframes breathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
