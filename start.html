@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#F4F1EA">
 <meta name="color-scheme" content="light">
 <link rel="icon" type="image/png" href="icon-192.png">
+<meta name="robots" content="noindex, nofollow">
 <meta name="description" content="Listen to your bounce away from the studio and note what's wrong at the exact second.">
 <style>
   :root{
@@ -64,6 +65,13 @@
   .note p{margin:0 0 9px}
   .note p:last-child{margin-bottom:0}
 
+  /* shown only when we can see they're in a browser that can't install */
+  .alert{display:none;margin:34px 0 0;padding:15px 17px;
+         border:1px solid rgba(27,26,23,.22);background:rgba(27,26,23,.04);
+         font-size:14.5px;line-height:1.55}
+  .alert.show{display:block}
+  .alert b{font-weight:600}
+
   @media (min-width:600px){
     .wrap{max-width:380px}
     body{padding-top:76px}
@@ -90,6 +98,8 @@
     <p>There's a gain stage into a limiter, so you can push a quiet premaster up to something you can judge on the move, and three bands of EQ if you want your track a little crispier, or the bottom end up or down. Both are monitoring only. Nothing is written to your file, and nothing is printed into the notes you share.</p>
   </div>
 
+  <div class="alert" id="alert"></div>
+
   <ol class="steps">
     <li>Open this page in <b>Safari</b> on your iPhone. If you tapped through from a message, hit the <b>&#8943;</b> or compass icon and choose <b>Open in Safari</b> first. The next step doesn't exist anywhere else.</li>
     <li>Tap the <b>share button</b>, scroll down, tap <b>Add to Home Screen</b>.</li>
@@ -102,9 +112,26 @@
   <div class="note">
     <p>Everything stays on your phone. No account, no upload, no server. Your bounces never leave the device, and neither do your notes.</p>
     <p>On a laptop it just runs in the browser; the home-screen step is an iPhone thing.</p>
-    <p>Rough and early. Tell me what breaks.</p>
+    <p>Rough and early. Tell me what breaks, or anything that just annoys you. Easiest is to reply wherever you got this link.</p>
   </div>
 
 </div>
+<script>
+(function(){
+  var ua = navigator.userAgent || '';
+  if (!/iPad|iPhone|iPod/.test(ua)) return;
+  var name = /CriOS/.test(ua)  ? 'Chrome'
+           : /FxiOS/.test(ua)  ? 'Firefox'
+           : /EdgiOS/.test(ua) ? 'Edge'
+           : /OPiOS|OPT\//.test(ua) ? 'Opera'
+           : null;
+  if (!name) return;
+  var el = document.getElementById('alert');
+  if (!el) return;
+  el.innerHTML = 'You’re in <b>' + name + '</b>, which can’t add things to the home screen. ' +
+                 'Tap the <b>⋯</b> menu and choose <b>Open in Safari</b>, then carry on below.';
+  el.className = 'alert show';
+})();
+</script>
 </body>
 </html>
